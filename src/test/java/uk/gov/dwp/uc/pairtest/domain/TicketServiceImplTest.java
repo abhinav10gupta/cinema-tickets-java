@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @DisplayName("TicketTypeRequest")
-public class TicketTypeRequestTest {
+public class TicketServiceImplTest {
 
     @Test
     @DisplayName("should create request with valid type and quantity")

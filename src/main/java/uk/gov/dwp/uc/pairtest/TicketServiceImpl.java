@@ -9,17 +9,30 @@ public class TicketServiceImpl implements TicketService {
     /**
      * Should only have private methods other than the one below.tic
      */
-    private final TicketPaymentService paymentService;
+    private final TicketPaymentService ticketPaymentService;
     private final SeatReservationService seatReservationService;
 
     public TicketServiceImpl(TicketPaymentService paymentService,
                              SeatReservationService seatReservationService) {
-        this.paymentService = paymentService;
+        this.ticketPaymentService = paymentService;
         this.seatReservationService = seatReservationService;
     }
 
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
+        int totalAmount = 0;
+        int totalSeats = 0;
 
+        for(TicketTypeRequest request: ticketTypeRequests ){
+            if(request.getTicketType() == TicketTypeRequest.Type.ADULT){
+                totalAmount += request.getNoOfTickets() * 25;
+                totalSeats += request.getNoOfTickets();
+            }
+        }
+        System.out.println("Making payment for amount: " + totalAmount);
+        ticketPaymentService.makePayment(accountId, totalAmount);
+
+        System.out.println("Reserving seats: " + totalSeats);
+        seatReservationService.reserveSeat(accountId, totalSeats);
     }
 }
