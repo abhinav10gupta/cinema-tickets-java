@@ -36,4 +36,20 @@ public class TicketServiceImplTest {
         verify(paymentService).makePayment(1L, 25);
         verify(seatReservationService).reserveSeat(1L, 1);
     }
+
+    @Test
+    @DisplayName("should make the payment and reserve seta for an adult and child tickets")
+    void shouldMakePaymentAndReserveOneSeatForAdultAndChildTicket(){
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(paymentService, seatReservationService);
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 2);
+        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 1);
+
+        service.purchaseTickets(1L, adultRequest, childRequest);
+
+        verify(paymentService).makePayment(1L, 65); // (2 * 25) + (1 * 15)
+        verify(seatReservationService).reserveSeat(1L, 3); // 2 adults + 1 child
+    }
 }
