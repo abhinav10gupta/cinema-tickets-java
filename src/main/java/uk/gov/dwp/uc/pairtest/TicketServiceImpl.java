@@ -25,12 +25,9 @@ public class TicketServiceImpl implements TicketService {
         int totalSeats = 0;
 
         for(TicketTypeRequest request: ticketTypeRequests ){
-            if(request.getTicketType() == TicketTypeRequest.Type.ADULT){
-                totalAmount += request.getNoOfTickets() * TicketConstants.ADULT_TICKET_PRICE;
-                totalSeats += request.getNoOfTickets();
-            }
-            if(request.getTicketType() == TicketTypeRequest.Type.CHILD){
-                totalAmount += request.getNoOfTickets() * TicketConstants.CHILD_TICKET_PRICE;
+            totalAmount += calculatePrice(request);
+            if(request.getTicketType() == TicketTypeRequest.Type.ADULT
+                    || request.getTicketType() == TicketTypeRequest.Type.CHILD){
                 totalSeats += request.getNoOfTickets();
             }
         }
@@ -39,5 +36,17 @@ public class TicketServiceImpl implements TicketService {
 
         System.out.println("Reserving seats: " + totalSeats);
         seatReservationService.reserveSeat(accountId, totalSeats);
+    }
+
+    private int calculatePrice(TicketTypeRequest request) {
+        if (request.getTicketType() == TicketTypeRequest.Type.ADULT) {
+            return request.getNoOfTickets() * TicketConstants.ADULT_TICKET_PRICE;
+        }
+
+        if (request.getTicketType() == TicketTypeRequest.Type.CHILD) {
+            return request.getNoOfTickets() * TicketConstants.CHILD_TICKET_PRICE;
+        }
+
+        return TicketConstants.INFANT_TICKET_PRICE;
     }
 }
