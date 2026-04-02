@@ -28,6 +28,10 @@ public class TicketServiceImpl implements TicketService {
                 totalAmount += request.getNoOfTickets() * 25;
                 totalSeats += request.getNoOfTickets();
             }
+            if(request.getTicketType() == TicketTypeRequest.Type.CHILD){
+                totalAmount += request.getNoOfTickets() * 15;
+                totalSeats += request.getNoOfTickets();
+            }
         }
         System.out.println("Making payment for amount: " + totalAmount);
         ticketPaymentService.makePayment(accountId, totalAmount);
