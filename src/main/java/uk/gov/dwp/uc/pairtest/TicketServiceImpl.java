@@ -2,6 +2,7 @@ package uk.gov.dwp.uc.pairtest;
 
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
+import uk.gov.dwp.uc.pairtest.config.TicketConstants;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
@@ -25,11 +26,11 @@ public class TicketServiceImpl implements TicketService {
 
         for(TicketTypeRequest request: ticketTypeRequests ){
             if(request.getTicketType() == TicketTypeRequest.Type.ADULT){
-                totalAmount += request.getNoOfTickets() * 25;
+                totalAmount += request.getNoOfTickets() * TicketConstants.ADULT_TICKET_PRICE;
                 totalSeats += request.getNoOfTickets();
             }
             if(request.getTicketType() == TicketTypeRequest.Type.CHILD){
-                totalAmount += request.getNoOfTickets() * 15;
+                totalAmount += request.getNoOfTickets() * TicketConstants.CHILD_TICKET_PRICE;
                 totalSeats += request.getNoOfTickets();
             }
         }
