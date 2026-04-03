@@ -2,7 +2,7 @@ package uk.gov.dwp.uc.pairtest;
 
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
-import uk.gov.dwp.uc.pairtest.config.TicketConstants;
+import uk.gov.dwp.uc.pairtest.calculator.TicketCalculator;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
@@ -12,25 +12,20 @@ public class TicketServiceImpl implements TicketService {
      */
     private final TicketPaymentService ticketPaymentService;
     private final SeatReservationService seatReservationService;
+    private final TicketCalculator ticketCalculator;
 
     public TicketServiceImpl(TicketPaymentService paymentService,
-                             SeatReservationService seatReservationService) {
+                             SeatReservationService seatReservationService, TicketCalculator ticketCalculator) {
         this.ticketPaymentService = paymentService;
         this.seatReservationService = seatReservationService;
+        this.ticketCalculator =  ticketCalculator;
     }
 
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
-        int totalAmount = 0;
-        int totalSeats = 0;
+        int totalAmount = ticketCalculator.calculateTotalAmount(ticketTypeRequests);
+        int totalSeats = ticketCalculator.calculateTotalSeats(ticketTypeRequests);
 
-        for(TicketTypeRequest request: ticketTypeRequests ){
-            totalAmount += calculatePrice(request);
-            if(request.getTicketType() == TicketTypeRequest.Type.ADULT
-                    || request.getTicketType() == TicketTypeRequest.Type.CHILD){
-                totalSeats += request.getNoOfTickets();
-            }
-        }
         System.out.println("Making payment for amount: " + totalAmount);
         ticketPaymentService.makePayment(accountId, totalAmount);
 
@@ -38,15 +33,4 @@ public class TicketServiceImpl implements TicketService {
         seatReservationService.reserveSeat(accountId, totalSeats);
     }
 
-    private int calculatePrice(TicketTypeRequest request) {
-        if (request.getTicketType() == TicketTypeRequest.Type.ADULT) {
-            return request.getNoOfTickets() * TicketConstants.ADULT_TICKET_PRICE;
-        }
-
-        if (request.getTicketType() == TicketTypeRequest.Type.CHILD) {
-            return request.getNoOfTickets() * TicketConstants.CHILD_TICKET_PRICE;
-        }
-
-        return TicketConstants.INFANT_TICKET_PRICE;
-    }
 }

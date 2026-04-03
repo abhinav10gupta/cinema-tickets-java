@@ -5,6 +5,8 @@ import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.TicketService;
 import uk.gov.dwp.uc.pairtest.TicketServiceImpl;
+import uk.gov.dwp.uc.pairtest.calculator.TicketCalculator;
+import uk.gov.dwp.uc.pairtest.pricing.PricingStrategyFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -28,7 +30,7 @@ public class TicketServiceImplTest {
         TicketPaymentService paymentService = mock(TicketPaymentService.class);
         SeatReservationService seatReservationService = mock(SeatReservationService.class);
 
-        TicketService service = new TicketServiceImpl(paymentService, seatReservationService);
+        TicketService service = createService(paymentService, seatReservationService);
         TicketTypeRequest request = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1);
 
         service.purchaseTickets(1L, request);
@@ -43,7 +45,7 @@ public class TicketServiceImplTest {
         TicketPaymentService paymentService = mock(TicketPaymentService.class);
         SeatReservationService seatReservationService = mock(SeatReservationService.class);
 
-        TicketService service = new TicketServiceImpl(paymentService, seatReservationService);
+        TicketService service = createService(paymentService, seatReservationService);
         TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 2);
         TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 1);
 
@@ -51,5 +53,14 @@ public class TicketServiceImplTest {
 
         verify(paymentService).makePayment(1L, 65); // (2 * 25) + (1 * 15)
         verify(seatReservationService).reserveSeat(1L, 3); // 2 adults + 1 child
+    }
+
+    private TicketService createService(TicketPaymentService paymentService,
+                                        SeatReservationService seatReservationService) {
+        return new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
     }
 }
