@@ -6,11 +6,11 @@ import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.TicketService;
 import uk.gov.dwp.uc.pairtest.TicketServiceImpl;
 import uk.gov.dwp.uc.pairtest.calculator.TicketCalculator;
+import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 import uk.gov.dwp.uc.pairtest.pricing.PricingStrategyFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @DisplayName("TicketTypeRequest")
 public class TicketServiceImplTest {
@@ -53,6 +53,67 @@ public class TicketServiceImplTest {
 
         verify(paymentService).makePayment(1L, 65); // (2 * 25) + (1 * 15)
         verify(seatReservationService).reserveSeat(1L, 3); // 2 adults + 1 child
+    }
+
+    @Test
+    @DisplayName("should make payment and reserve seats for adult and infant tickets")
+    void shouldMakePaymentAndReserveSeatsForAdultAndInfantTickets() {
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = createService(paymentService, seatReservationService);
+
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1);
+        TicketTypeRequest infantRequest = new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 1);
+
+        service.purchaseTickets(1L, adultRequest, infantRequest);
+
+        verify(paymentService).makePayment(1L, 25);
+        verify(seatReservationService).reserveSeat(1L, 1);
+    }
+
+    @Test
+    @DisplayName("should throw exception when child ticket is purchased without adult ticket")
+    void shouldThrowExceptionChildTicketPurchasedWithoutAdltTicket() {
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 1);
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, childRequest)
+        );
+
+        verifyNoInteractions(paymentService);
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("should throw exception when infant ticket is purchased without adult ticket")
+    void shouldThrowExceptionInfnatTicketPurchasedWithoutAdultTicket() {
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        TicketTypeRequest infantRequest = new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 1);
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, infantRequest)
+        );
+
+        verifyNoInteractions(paymentService);
+        verifyNoInteractions(seatReservationService);
     }
 
     private TicketService createService(TicketPaymentService paymentService,
