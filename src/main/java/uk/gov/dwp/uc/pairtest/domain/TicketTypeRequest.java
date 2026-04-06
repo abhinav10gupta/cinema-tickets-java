@@ -23,7 +23,8 @@ public class TicketTypeRequest {
     }
 
     public enum Type {
-        ADULT, CHILD , INFANT
+        ADULT, CHILD , INFANT;
+        public static final int MAX_TICKETS = 25;
     }
 
 }

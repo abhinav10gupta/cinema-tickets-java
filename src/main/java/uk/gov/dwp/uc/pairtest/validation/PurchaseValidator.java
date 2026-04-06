@@ -10,7 +10,26 @@ public class PurchaseValidator {
         validateAccountId(accountId);
         validateRequestPresent(ticketTypeRequests);
         validateChildTicketPurchase(ticketTypeRequests);
+        validateInfantTicketGreaterThanAdult(ticketTypeRequests);
+        validateMaxTickets(ticketTypeRequests);
+    }
 
+    private void validateMaxTickets(TicketTypeRequest[] ticketTypeRequests) {
+        TicketCountSummary ticketCountSummary = getTicketCountSummary(ticketTypeRequests);
+
+        int totalTicketCount = ticketCountSummary.adultCount + ticketCountSummary.childCount;
+
+        if (totalTicketCount > TicketTypeRequest.Type.MAX_TICKETS) {
+            throw new InvalidPurchaseException("Maximum 25 Tickets can be purchased at a time.");
+        }
+    }
+
+    private void validateInfantTicketGreaterThanAdult(TicketTypeRequest[] ticketTypeRequests) {
+        TicketCountSummary ticketCountSummary = getTicketCountSummary(ticketTypeRequests);
+
+        if (ticketCountSummary.infantCount > ticketCountSummary.adultCount) {
+            throw new InvalidPurchaseException("Number ofInfant Tickets cannot be greater tha number of Adult Tickets.");
+        }
     }
 
     private void validateAccountId(Long accountId) {
@@ -21,11 +40,20 @@ public class PurchaseValidator {
 
     private void validateRequestPresent(TicketTypeRequest... ticketTypeRequests) {
         if(ticketTypeRequests == null || ticketTypeRequests.length == 0){
-            throw new InvalidPurchaseException("Atleast one ticket is required in the request.");
+            throw new InvalidPurchaseException("At least one ticket is required in the request.");
         }
     }
 
     private void validateChildTicketPurchase(TicketTypeRequest[] ticketTypeRequests) {
+        TicketCountSummary ticketCountSummary = getTicketCountSummary(ticketTypeRequests);
+
+        if ((ticketCountSummary.childCount > 0 || ticketCountSummary.infantCount > 0)
+                && ticketCountSummary.adultCount == 0) {
+            throw new InvalidPurchaseException("Child/Infant Ticket cannot be purchased without Adult Ticket.");
+        }
+    }
+
+    private TicketCountSummary getTicketCountSummary(TicketTypeRequest[] ticketTypeRequests) {
         int adultCount = 0;
         int childCount = 0;
         int infantCount = 0;
@@ -44,9 +72,9 @@ public class PurchaseValidator {
             }
         }
 
-        if((childCount > 0 || infantCount > 0) && adultCount == 0){
-            throw new InvalidPurchaseException("Child/Infant Ticket cannot be purchased without Adult Ticket.");
-        }
+        return new TicketCountSummary(adultCount, childCount, infantCount);
     }
 
+    private record TicketCountSummary(int adultCount, int childCount, int infantCount) {
+    }
 }

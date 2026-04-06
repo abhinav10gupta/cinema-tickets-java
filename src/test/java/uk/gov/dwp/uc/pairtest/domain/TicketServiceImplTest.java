@@ -150,7 +150,7 @@ public class TicketServiceImplTest {
                 new TicketCalculator(new PricingStrategyFactory())
         );
         TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 20);
-        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 5);
+        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 6);
 
         assertThrows(InvalidPurchaseException.class, () ->
                 service.purchaseTickets(1L, adultRequest, childRequest)
