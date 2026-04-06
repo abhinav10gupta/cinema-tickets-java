@@ -139,7 +139,7 @@ public class TicketServiceImplTest {
 
     @Test
     @DisplayName("Should throw Exception if Ticket Request contains NULL")
-    void shouldThrowWxceptionTicketRequestNULL(){
+    void shouldThrowExceptionTicketRequestNULL(){
 
         TicketPaymentService paymentService = mock(TicketPaymentService.class);
         SeatReservationService seatReservationService = mock(SeatReservationService.class);

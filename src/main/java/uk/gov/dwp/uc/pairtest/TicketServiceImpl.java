@@ -20,16 +20,16 @@ public class TicketServiceImpl implements TicketService {
                              SeatReservationService seatReservationService, TicketCalculator ticketCalculator) {
         this.ticketPaymentService = paymentService;
         this.seatReservationService = seatReservationService;
-        this.ticketCalculator =  ticketCalculator;
+        this.ticketCalculator = ticketCalculator;
         this.purchaseValidator = new PurchaseValidator();
     }
 
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
+        purchaseValidator.validate(accountId, ticketTypeRequests);
+
         int totalAmount = ticketCalculator.calculateTotalAmount(ticketTypeRequests);
         int totalSeats = ticketCalculator.calculateTotalSeats(ticketTypeRequests);
-
-        purchaseValidator.validate(accountId, ticketTypeRequests);
 
         System.out.println("Making payment for amount: " + totalAmount);
         ticketPaymentService.makePayment(accountId, totalAmount);

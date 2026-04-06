@@ -7,8 +7,22 @@ public class PurchaseValidator {
 
     public void validate(Long accountId, TicketTypeRequest... ticketTypeRequests) {
 
+        validateAccountId(accountId);
+        validateRequestPresent(ticketTypeRequests);
         validateChildTicketPurchase(ticketTypeRequests);
 
+    }
+
+    private void validateAccountId(Long accountId) {
+        if(accountId == null || accountId<= 0){
+            throw new InvalidPurchaseException("Invalid Account ID");
+        }
+    }
+
+    private void validateRequestPresent(TicketTypeRequest... ticketTypeRequests) {
+        if(ticketTypeRequests == null || ticketTypeRequests.length == 0){
+            throw new InvalidPurchaseException("Atleast one ticket is required in the request.");
+        }
     }
 
     private void validateChildTicketPurchase(TicketTypeRequest[] ticketTypeRequests) {
