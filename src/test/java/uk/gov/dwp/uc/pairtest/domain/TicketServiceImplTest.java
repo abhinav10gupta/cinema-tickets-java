@@ -173,9 +173,9 @@ public class TicketServiceImplTest {
                 new TicketCalculator(new PricingStrategyFactory())
         );
 
-        TicketTypeRequest adultReqest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT,1);
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT,1);
 
-        assertThrows(InvalidPurchaseException.class, ()-> service.purchaseTickets(0L, adultReqest));
+        assertThrows(InvalidPurchaseException.class, ()-> service.purchaseTickets(0L, adultRequest));
 
         verifyNoInteractions((paymentService));
         verifyNoInteractions(seatReservationService);

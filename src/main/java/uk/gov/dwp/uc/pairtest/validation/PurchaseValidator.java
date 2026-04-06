@@ -17,7 +17,7 @@ public class PurchaseValidator {
     private void validateMaxTickets(TicketTypeRequest[] ticketTypeRequests) {
         TicketCountSummary ticketCountSummary = getTicketCountSummary(ticketTypeRequests);
 
-        int totalTicketCount = ticketCountSummary.adultCount + ticketCountSummary.childCount;
+        int totalTicketCount = ticketCountSummary.adultCount + ticketCountSummary.childCount + ticketCountSummary.infantCount;
 
         if (totalTicketCount > TicketTypeRequest.Type.MAX_TICKETS) {
             throw new InvalidPurchaseException("Maximum 25 Tickets can be purchased at a time.");
