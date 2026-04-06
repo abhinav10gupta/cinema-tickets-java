@@ -116,6 +116,69 @@ public class TicketServiceImplTest {
         verifyNoInteractions(seatReservationService);
     }
 
+    @Test
+    @DisplayName("should throw Exception if Accound ID is Invalid")
+    void shouldThrowExceptionAccountIDInvalid(){
+
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        TicketTypeRequest adultReqest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT,1);
+
+        assertThrows(InvalidPurchaseException.class, ()-> service.purchaseTickets(0L, adultReqest));
+
+        verifyNoInteractions((paymentService));
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("Should throw Exception if Ticket Request contains NULL")
+    void shouldThrowWxceptionTicketRequestNULL(){
+
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, (TicketTypeRequest[]) null));
+
+        verifyNoInteractions((paymentService));
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("Should throw Exception if Ticket Request is empty")
+    void shouldThrowExceptionTicketRequestIsEmpty(){
+
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L));
+
+        verifyNoInteractions((paymentService));
+        verifyNoInteractions(seatReservationService);
+    }
+
+
+
     private TicketService createService(TicketPaymentService paymentService,
                                         SeatReservationService seatReservationService) {
         return new TicketServiceImpl(
