@@ -40,7 +40,7 @@ public class TicketServiceImplTest {
     }
 
     @Test
-    @DisplayName("should make the payment and reserve seta for an adult and child tickets")
+    @DisplayName("should make the payment and reserve seat for an adult and child tickets")
     void shouldMakePaymentAndReserveOneSeatForAdultAndChildTicket(){
         TicketPaymentService paymentService = mock(TicketPaymentService.class);
         SeatReservationService seatReservationService = mock(SeatReservationService.class);
@@ -139,6 +139,27 @@ public class TicketServiceImplTest {
     }
 
     @Test
+    @DisplayName("should accept if Infant count = Adult count")
+    void shouldAcceptInfantAndAdultCountIsEqual(){
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 2);
+        TicketTypeRequest infantRequest = new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 2);
+
+        service.purchaseTickets(1L, adultRequest, infantRequest);
+
+        verify(paymentService).makePayment(1L, 50);
+        verify(seatReservationService).reserveSeat(1L, 2);
+    }
+
+
+    @Test
     @DisplayName("should throw Exception if Total Ticket count > 25")
     void shouldThrowExceptionIfTotalTicketIsGreaterThanTwentyFive(){
         TicketPaymentService paymentService = mock(TicketPaymentService.class);
@@ -158,6 +179,26 @@ public class TicketServiceImplTest {
 
         verifyNoInteractions(paymentService);
         verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("should accept if Max Ticket count = 25")
+    void shouldAcceptMaxTicketLessThanEqualTwentyFive(){
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 20);
+        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 5);
+
+        service.purchaseTickets(1L, adultRequest, childRequest);
+
+        verify(paymentService).makePayment(1L, 575);
+        verify(seatReservationService).reserveSeat(1L, 25);
     }
 
     @Test
@@ -218,6 +259,42 @@ public class TicketServiceImplTest {
                 service.purchaseTickets(1L));
 
         verifyNoInteractions((paymentService));
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("should throw exception when ticket quantity is zero")
+    void shouldThrowExceptionWhenTicketQuantityIsZero() {
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = createService(paymentService, seatReservationService);
+
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 0);
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, adultRequest)
+        );
+
+        verifyNoInteractions(paymentService);
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("should throw exception when ticket quantity is negative")
+    void shouldThrowExceptionWhenTicketQuantityIsNegative() {
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = createService(paymentService, seatReservationService);
+
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, -1);
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, adultRequest)
+        );
+
+        verifyNoInteractions(paymentService);
         verifyNoInteractions(seatReservationService);
     }
 
