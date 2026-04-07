@@ -56,6 +56,24 @@ public class TicketServiceImplTest {
     }
 
     @Test
+    @DisplayName("should make payment and reserve seats for adult, child and infant tickets")
+    void shouldMakePaymentAndReserveSeatsForAdultChildAndInfantTickets() {
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = createService(paymentService, seatReservationService);
+
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 2);
+        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 1);
+        TicketTypeRequest infantRequest = new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 1);
+
+        service.purchaseTickets(1L, adultRequest, childRequest, infantRequest);
+
+        verify(paymentService).makePayment(1L, 65);
+        verify(seatReservationService).reserveSeat(1L, 3);
+    }
+
+    @Test
     @DisplayName("should make payment and reserve seats for adult and infant tickets")
     void shouldMakePaymentAndReserveSeatsForAdultAndInfantTickets() {
         TicketPaymentService paymentService = mock(TicketPaymentService.class);
@@ -175,6 +193,53 @@ public class TicketServiceImplTest {
 
         assertThrows(InvalidPurchaseException.class, () ->
                 service.purchaseTickets(1L, adultRequest, childRequest)
+        );
+
+        verifyNoInteractions(paymentService);
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("should throw Exception if Total Ticket count > 25 with Adult and Infant")
+    void shouldThrowExceptionIfTotalTicketIsGreaterThanTwentyFiveTwo(){
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 20);
+        TicketTypeRequest infantRequest = new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 6);
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, adultRequest, infantRequest)
+        );
+
+        verifyNoInteractions(paymentService);
+        verifyNoInteractions(seatReservationService);
+    }
+
+    @Test
+    @DisplayName("should throw Exception if Total Ticket count > 25 with Adult, Child and Infant")
+    void shouldThrowExceptionIfTotalTicketIsGreaterThanTwentyFiveThree(){
+        TicketPaymentService paymentService = mock(TicketPaymentService.class);
+        SeatReservationService seatReservationService = mock(SeatReservationService.class);
+
+        TicketService service = new TicketServiceImpl(
+                paymentService,
+                seatReservationService,
+                new TicketCalculator(new PricingStrategyFactory())
+        );
+
+        TicketTypeRequest adultRequest = new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 20);
+        TicketTypeRequest childRequest = new TicketTypeRequest(TicketTypeRequest.Type.CHILD, 3);
+        TicketTypeRequest infantRequest = new TicketTypeRequest(TicketTypeRequest.Type.INFANT, 3);
+
+        assertThrows(InvalidPurchaseException.class, () ->
+                service.purchaseTickets(1L, adultRequest, childRequest, infantRequest)
         );
 
         verifyNoInteractions(paymentService);
