@@ -12,6 +12,7 @@ public class PurchaseValidator {
         validateChildTicketPurchase(ticketTypeRequests);
         validateInfantTicketGreaterThanAdult(ticketTypeRequests);
         validateMaxTickets(ticketTypeRequests);
+        validatePositiveTicketQuantity(ticketTypeRequests);
     }
 
     private void validateMaxTickets(TicketTypeRequest[] ticketTypeRequests) {
@@ -50,6 +51,14 @@ public class PurchaseValidator {
         if ((ticketCountSummary.childCount > 0 || ticketCountSummary.infantCount > 0)
                 && ticketCountSummary.adultCount == 0) {
             throw new InvalidPurchaseException("Child/Infant Ticket cannot be purchased without Adult Ticket.");
+        }
+    }
+
+    private void validatePositiveTicketQuantity(TicketTypeRequest... ticketTypeRequests) {
+        for (TicketTypeRequest request : ticketTypeRequests) {
+            if (request.getNoOfTickets() <= 0) {
+                throw new InvalidPurchaseException("Ticket quantity should be greater than zero.");
+            }
         }
     }
 
